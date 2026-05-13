@@ -1,0 +1,67 @@
+@startuml
+hide circle
+skinparam linetype ortho
+
+entity "users" as users {
+  * user_id : SERIAL <<PK>>
+  --
+  full_name : VARCHAR(100)
+  email : VARCHAR(100) <<UNIQUE>>
+  phone : VARCHAR(20)
+}
+
+entity "suppliers" as suppliers {
+  * supplier_id : SERIAL <<PK>>
+  --
+  name : VARCHAR(150)
+  supplier_type : VARCHAR(20)
+}
+
+entity "products" as products {
+  * product_id : SERIAL <<PK>>
+  --
+  supplier_id : INT <<FK>>
+  name : VARCHAR(150)
+  description : TEXT
+  price : DECIMAL(10,2)
+  is_active : BOOLEAN
+}
+
+entity "group_orders" as group_orders {
+  * group_order_id : SERIAL <<PK>>
+  --
+  supplier_id : INT <<FK>>
+  title : VARCHAR(150)
+  description : TEXT
+  status : VARCHAR(20)
+  min_participants : INT
+  min_total_amount : DECIMAL(10,2)
+}
+
+entity "participations" as participations {
+  * participation_id : SERIAL <<PK>>
+  --
+  group_order_id : INT <<FK>>
+  user_id : INT <<FK>>
+  participant_status : VARCHAR(20)
+  participation_role : VARCHAR(20)
+}
+
+entity "order_items" as order_items {
+  * order_item_id : SERIAL <<PK>>
+  --
+  participation_id : INT <<FK>>
+  product_id : INT <<FK>>
+  quantity : DECIMAL(10,2)
+  price_per_unit : DECIMAL(10,2)
+  line_total : DECIMAL(10,2)
+}
+
+suppliers ||--o{ group_orders : supplies_for
+suppliers ||--o{ products : offers
+users ||--o{ participations : joins
+group_orders ||--o{ participations : includes
+participations ||--o{ order_items : contains
+products ||--o{ order_items : selected_in
+
+@enduml
