@@ -1,8 +1,3 @@
--- Lab 4. Alternative indexing strategies for the same query.
--- Compare product-only index versus product plus ordering key.
-
-\timing on
-
 DROP INDEX IF EXISTS lab4_idx_order_items_product_only;
 DROP INDEX IF EXISTS lab4_idx_order_items_product_line_desc;
 DROP INDEX IF EXISTS lab4_idx_order_items_product_line_quantity;
@@ -12,7 +7,7 @@ DROP INDEX IF EXISTS lab4_idx_order_items_product_participation;
 
 ANALYZE order_items;
 
--- Baseline for this exact query.
+-- Нет индекса
 EXPLAIN (ANALYZE, BUFFERS)
 SELECT
     oi.order_item_id,
@@ -21,14 +16,14 @@ SELECT
     oi.line_total
 FROM order_items oi
 WHERE oi.product_id = (
-        SELECT MIN(product_id)
+        SELECT product_id
         FROM products
         WHERE name = 'LAB4 cheese'
     )
 ORDER BY oi.line_total DESC, oi.order_item_id
 LIMIT 200;
 
--- Variant A: helps filtering by product_id, but still needs sorting.
+-- Индекс по product_id
 CREATE INDEX lab4_idx_order_items_product_only
     ON order_items (product_id);
 
@@ -51,7 +46,7 @@ LIMIT 200;
 
 DROP INDEX IF EXISTS lab4_idx_order_items_product_only;
 
--- Variant B: supports both filtering and ORDER BY/LIMIT.
+-- Составной индекс
 CREATE INDEX lab4_idx_order_items_product_line_desc
     ON order_items (product_id, line_total DESC, order_item_id)
     INCLUDE (participation_id, quantity);

@@ -1,9 +1,9 @@
--- Lab 4. Plans after creating LAB4 indexes.
--- Run after lab4_03_create_indexes.sql.
+ANALYZE users;
+ANALYZE group_orders;
+ANALYZE participations;
+ANALYZE order_items;
 
-\timing on
-
--- 1. Complex filter: expected to use the composite B-tree index.
+-- 1. Сложный фильтр. Запрос с несколькими условиями
 EXPLAIN (ANALYZE, BUFFERS)
 SELECT
     oi.order_item_id,
@@ -13,7 +13,7 @@ SELECT
     oi.line_total
 FROM order_items oi
 WHERE oi.product_id = (
-        SELECT MIN(product_id)
+        SELECT product_id
         FROM products
         WHERE name = 'LAB4 milk'
     )
@@ -22,7 +22,7 @@ WHERE oi.product_id = (
 ORDER BY oi.line_total, oi.order_item_id
 LIMIT 200;
 
--- 2. ORDER BY with LIMIT: expected to scan the descending line_total index.
+-- 2. Сортировка с ограничением
 EXPLAIN (ANALYZE, BUFFERS)
 SELECT
     oi.order_item_id,
@@ -34,23 +34,7 @@ FROM order_items oi
 ORDER BY oi.line_total DESC, oi.order_item_id
 LIMIT 100;
 
--- 3. Optimized alternative: composite index supports filter and ordering.
-EXPLAIN (ANALYZE, BUFFERS)
-SELECT
-    oi.order_item_id,
-    oi.participation_id,
-    oi.quantity,
-    oi.line_total
-FROM order_items oi
-WHERE oi.product_id = (
-        SELECT MIN(product_id)
-        FROM products
-        WHERE name = 'LAB4 cheese'
-    )
-ORDER BY oi.line_total DESC, oi.order_item_id
-LIMIT 200;
-
--- 4. Text search: prefix, substring, and suffix.
+-- 4. Текстовый поиск
 EXPLAIN (ANALYZE, BUFFERS)
 SELECT user_id, full_name, email
 FROM users
@@ -72,7 +56,7 @@ WHERE email ILIKE '%9999@lab4.example.com'
 ORDER BY user_id
 LIMIT 100;
 
--- 5. JOIN across the existing schema.
+-- 5. Запрос, включающий соединение двух или более таблиц
 EXPLAIN (ANALYZE, BUFFERS)
 SELECT
     u.user_id,
@@ -87,7 +71,7 @@ JOIN order_items oi
     ON oi.participation_id = p.participation_id
 WHERE go.title = 'LAB4 bulk order 01'
   AND oi.product_id = (
-        SELECT MIN(product_id)
+        SELECT product_id
         FROM products
         WHERE name = 'LAB4 potatoes'
     )
@@ -95,7 +79,7 @@ GROUP BY u.user_id, u.email
 ORDER BY total_amount DESC
 LIMIT 100;
 
--- 6. Negative scenario: index exists, but selectivity is poor.
+-- 6. Негативный сценарий
 EXPLAIN (ANALYZE, BUFFERS)
 SELECT COUNT(*)
 FROM order_items oi

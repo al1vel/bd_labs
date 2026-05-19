@@ -1,9 +1,3 @@
--- Lab 4. Data preparation for indexing experiments.
--- Run after create_script.sql and fill_tables.sql.
--- The script adds LAB4-marked data only and leaves existing rows intact.
-
-\timing on
-
 INSERT INTO suppliers (name, supplier_type)
 SELECT 'LAB4 cooperative supplier', 'farmer'
 WHERE NOT EXISTS (
@@ -54,7 +48,6 @@ WHERE s.name = 'LAB4 cooperative supplier'
       WHERE go.title = 'LAB4 bulk order 01'
   );
 
--- Text-search scenarios use this million-row table.
 INSERT INTO users (full_name, email, phone)
 SELECT
     'Lab4 Buyer ' || LPAD(series.n::TEXT, 7, '0') AS full_name,
@@ -90,7 +83,6 @@ JOIN users u
 WHERE go.title = 'LAB4 bulk order 01'
 ON CONFLICT DO NOTHING;
 
--- The main indexable fact table. Insert only if LAB4 order_items are absent.
 WITH product_pool AS (
     SELECT
         product_id,
@@ -150,26 +142,3 @@ WHERE NOT EXISTS (
     WHERE go.title = 'LAB4 bulk order 01'
     LIMIT 1
 );
-
-ANALYZE users;
-ANALYZE suppliers;
-ANALYZE products;
-ANALYZE group_orders;
-ANALYZE participations;
-ANALYZE order_items;
-
-SELECT
-    'users' AS table_name,
-    COUNT(*) AS lab4_rows
-FROM users
-WHERE email LIKE 'lab4_user_%@lab4.example.com'
-UNION ALL
-SELECT
-    'order_items',
-    COUNT(*)
-FROM order_items oi
-JOIN participations p
-    ON p.participation_id = oi.participation_id
-JOIN group_orders go
-    ON go.group_order_id = p.group_order_id
-WHERE go.title = 'LAB4 bulk order 01';

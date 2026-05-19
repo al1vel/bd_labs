@@ -1,8 +1,3 @@
--- Lab 4. Optional cleanup for indexes created by the experiment.
--- This script keeps generated LAB4 data and removes only LAB4 indexes.
-
-\timing on
-
 DROP INDEX IF EXISTS lab4_idx_order_items_product_line_quantity;
 DROP INDEX IF EXISTS lab4_idx_order_items_line_total_desc;
 DROP INDEX IF EXISTS lab4_idx_order_items_product_line_desc;

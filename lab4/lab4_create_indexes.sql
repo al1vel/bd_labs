@@ -1,8 +1,3 @@
--- Lab 4. Main index set for optimized scenarios.
--- Run after baseline measurements.
-
-\timing on
-
 CREATE EXTENSION IF NOT EXISTS pg_trgm;
 
 CREATE INDEX IF NOT EXISTS lab4_idx_order_items_product_line_quantity
@@ -39,12 +34,5 @@ CREATE INDEX IF NOT EXISTS lab4_idx_order_items_product_participation
     ON order_items (product_id, participation_id)
     INCLUDE (line_total);
 
--- Index used in the negative scenario. The query is intentionally too broad,
--- so the planner will usually prefer a sequential scan despite this index.
 CREATE INDEX IF NOT EXISTS lab4_idx_order_items_quantity
     ON order_items (quantity);
-
-ANALYZE users;
-ANALYZE group_orders;
-ANALYZE participations;
-ANALYZE order_items;
