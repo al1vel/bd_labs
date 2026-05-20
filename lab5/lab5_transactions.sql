@@ -7,8 +7,7 @@ INSERT INTO participations (group_order_id, user_id, participant_status, partici
 SELECT go.group_order_id, u.user_id, 'joined', 'participant'
 FROM group_orders go
 JOIN users u ON u.email = 'lab5.boris@example.com'
-WHERE go.title = 'LAB5 Farmer weekly order'
-RETURNING participation_id;
+WHERE go.title = 'LAB5 Farmer weekly order';
 
 INSERT INTO order_items (participation_id, product_id, quantity, price_per_unit, line_total)
 SELECT p.participation_id, pr.product_id, 3, pr.price, 3 * pr.price
